@@ -19,8 +19,8 @@ class BlazeNeo(torch.nn.Module):
 
         # ---- Partial Decoder ----
         if auxiliary:
-            self.agg1 = DHA(32)
-            # self.agg1 = LSC(32)
+            # self.agg1 = DHA(32)
+            self.agg1 = LSC(32)
             self.head_1 = Head(32, 1)
             self.upsample_1 = Upsample(scale_factor=8)
         

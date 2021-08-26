@@ -51,8 +51,8 @@ class Metric():
 
 
 def main():
-    GT_DIR = "/media/syan/163EAD8F3EAD6887/VinIF/Data/!NeoDataset-1300/label_images"
-    pr_fps = glob("/media/syan/163EAD8F3EAD6887/VinIF/Result/exp_110821/PraNet/*")
+    GT_DIR = "/media/syan/163EAD8F3EAD6887/VinIF/Data/WLIv5_pub_640/Test/label_images"
+    pr_fps = glob("/media/syan/6B50-B864/xavier_result/pranet/int8_v2/*")
 
     polyp_metric = Metric("polyp")
     neo_metric = Metric("neo")
@@ -71,7 +71,7 @@ def main():
         non_gt = np.all(gt_img == [0, 255, 0], axis=-1).astype('float')
         polyp_gt = neo_gt + non_gt
 
-        neo_pr = np.all(pr_img == [0, 0, 255], axis=-1).astype('float')
+        neo_pr = np.all(pr_img == [255, 0, 0], axis=-1).astype('float')
         non_pr = np.all(pr_img == [0, 255, 0], axis=-1).astype('float')
         polyp_pr = neo_pr + non_pr
 
