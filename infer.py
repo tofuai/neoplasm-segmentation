@@ -1,26 +1,27 @@
+from models import BlazeNeo
+from utils import data
+import torch
+import time
+import yaml
+from tqdm import tqdm
+import numpy as np
+import cv2
+import sys
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-import sys
-import cv2
-import numpy as np
-from tqdm import tqdm
-import yaml
-import time
-import torch
 
-from utils import data
-from models import UNet, PraNet, HarDNetMSEG, NeoUNet
 
 def main(argv):
-    YAML_FP = "/home/s/syan/neoplasm_segmentation/config/exp110821.yml"
-    MODEL_PATH = "/home/s/syan/Models/exp110821/NeoUNet_110821.pth"
-    SAVED_RESULT = "/home/s/syan/Results/exp110821/NeoUNet"
+    YAML_FP = "config/exp_compare_lanloss.yml"
+    MODEL_PATH = "/media/syan/163EAD8F3EAD6887/VinIF/models/torch/BlazeNeo_woAux_150921.pth"
+    SAVED_RESULT = "/media/syan/163EAD8F3EAD6887/VinIF/tmp"
 
     with open(YAML_FP) as fp:
         config = yaml.load(fp)
 
-    #==================== READ DATA ========================
-    test_image_fps = data.read_data_file(config["test_txt_path"], config["test_root_dir"])
+    # ==================== READ DATA ========================
+    test_image_fps = data.read_data_file(
+        config["test_txt_path"], config["test_root_dir"])
     print("Number of test images: {}".format(len(test_image_fps)))
 
     test_dataset = data.Dataset(
@@ -34,16 +35,16 @@ def main(argv):
             data.preprocess_input
         )
     )
-    #=======================================================
+    # =======================================================
 
-    #================ CREATE MODEL =========================
-    model = NeoUNet()
+    # ================ CREATE MODEL =========================
+    model = BlazeNeo(aggregation="DHA", auxiliary=False)
     model.load_state_dict(torch.load(MODEL_PATH), strict=False)
     model.to(torch.device("cuda"))
     model.eval()
-    #=======================================================
+    # =======================================================
 
-    #================= INFER ===============================
+    # ================= INFER ===============================
     for i in tqdm(range(0, len(test_image_fps))):
         fn = test_image_fps[i].split("/")[-1].split(".")[0]
         image, label = test_dataset[i]
@@ -55,7 +56,7 @@ def main(argv):
         # BlazeNeo
         # with torch.no_grad():
         #     _, predict = model(image)
-        #PraNet
+        # PraNet
         # with torch.no_grad():
         #     _, _, _, predict = model(image)
         # predict = torch.argmax(predict, dim=1, keepdims=True).squeeze().data.cpu().numpy()
@@ -67,20 +68,21 @@ def main(argv):
 
         # NeoUNet
         with torch.no_grad():
-            _, _, _, predict = model(image)
+            predict = model(image)
         neo_predict = predict[:, [0], :, :]
         non_predict = predict[:, [1], :, :]
 
         neo_predict = torch.sigmoid(neo_predict).squeeze().data.cpu().numpy()
         non_predict = torch.sigmoid(non_predict).squeeze().data.cpu().numpy()
 
-        output = np.zeros((predict.shape[-2], predict.shape[-1], 3)).astype(np.uint8)
-        output[(neo_predict>non_predict) * (neo_predict>0.5)] = [0, 0, 255]
-        output[(non_predict>neo_predict) * (non_predict>0.5)] = [0, 255, 0]
+        output = np.zeros(
+            (predict.shape[-2], predict.shape[-1], 3)).astype(np.uint8)
+        output[(neo_predict > non_predict) * (neo_predict > 0.5)] = [0, 0, 255]
+        output[(non_predict > neo_predict) * (non_predict > 0.5)] = [0, 255, 0]
 
         saved_path = os.path.join(SAVED_RESULT, '{}.png'.format(fn))
         cv2.imwrite(saved_path, output)
-    #=======================================================
+    # =======================================================
 
 
 if __name__ == "__main__":
