@@ -1,15 +1,15 @@
 saved_dir: /content/drive/MyDrive/VinIF/Models/
 
-train_root_dir: /content/WLIv5_pub_640/Train/images/
+train_root_dir: /media/syan/163EAD8F3EAD6887/VinIF/Data/WLIv5_pub_640/Train/images/
 train_txt_path:
-  - /content/neoplastic_segmentation/config/wliv5/wliv5_wo_non.txt
-  - /content/neoplastic_segmentation/config/wliv5/wliv5_w_non.txt
-  - /content/neoplastic_segmentation/config/wliv5/wliv5_w_non.txt
-  - /content/neoplastic_segmentation/config/wliv5/wliv5_w_non.txt
-  - /content/neoplastic_segmentation/config/wliv5/wliv5_w_non.txt
-  - /content/neoplastic_segmentation/config/wliv5/wliv5_w_non.txt
-test_root_dir: /content/WLIv5_pub_640/Test/images/
-test_txt_path: /content/neoplastic_segmentation/config/wliv5/wliv5_test.txt
+  - config/wliv5/wliv5_wo_non.txt
+  - config/wliv5/wliv5_w_non.txt
+  - config/wliv5/wliv5_w_non.txt
+  - config/wliv5/wliv5_w_non.txt
+  - config/wliv5/wliv5_w_non.txt
+  - config/wliv5/wliv5_w_non.txt
+test_root_dir: /media/syan/163EAD8F3EAD6887/VinIF/Data/WLIv5_pub_640/Test/images/
+test_txt_path: config/wliv5/wliv5_test.txt
 
 # Color
 mask_values:
@@ -25,7 +25,7 @@ width: 352
 # Training params
 lr: 1e-3
 min_lr: 0
-batch_size: 16
-num_epoch: 50
-warmup_epoch: 10
+batch_size: 1
+num_epoch: 20
+warmup_epoch: 5
 weight_decay: 1e-4

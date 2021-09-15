@@ -28,11 +28,12 @@ def CELoss(inputs, targets, ignore=None):
     return ce_loss.mean()
 
 
-def FocalTverskyLoss(inputs, targets, alpha=0.7, beta=0.3, gamma=4/3, smooth=1, ignore=None):
-    if inputs.shape[1] == 1:
-        inputs = torch.sigmoid(inputs)
-    else:
-        inputs = torch.softmax(inputs, dim=1)
+def FocalTverskyLoss(inputs, targets, alpha=0.7, beta=0.3, gamma=4/3, smooth=1, ignore=None, activation=True):
+    if activation:
+        if inputs.shape[1] == 1:
+            inputs = torch.sigmoid(inputs)
+        else:
+            inputs = torch.softmax(inputs, dim=1)
 
     if ignore is None:
         tp = (inputs * targets).sum(dim=(0, 2, 3))
@@ -79,16 +80,19 @@ class BlazeNeoLoss2(nn.Module):
     def forward(self, y_pr, mask):
         polyp_mask, neo_mask, ignore_mask = split_mask(mask)
 
-        # ce_loss = CELoss(y_pr, polyp_mask)
-        # ft_loss = FocalTverskyLoss(y_prs[0], polyp_mask)
-        # aux_loss = ce_loss + ft_loss
-        print(y_pr.shape)
+        softmax_pr = torch.softmax(y_pr, dim=1)
+        fg = softmax_pr[:, [0], :, :] + softmax_pr[:, [1], :, :]
+        bg = softmax_pr[:, [2], :, :]
+        polyp_pr = torch.cat((fg, bg), dim=1)
+        ce_loss = CELoss(polyp_pr, polyp_mask)
+        ft_loss = FocalTverskyLoss(polyp_pr, polyp_mask, activation=False)
+        aux_loss = ce_loss + ft_loss
 
         ce_loss = CELoss(y_pr, neo_mask, ignore=ignore_mask)
         ft_loss = FocalTverskyLoss(y_pr, neo_mask, ignore=ignore_mask)
         main_loss = ce_loss + ft_loss
 
-        return main_loss
+        return aux_loss + main_loss
 
 
 class UNetLoss(nn.Module):

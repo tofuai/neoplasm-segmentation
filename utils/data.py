@@ -8,11 +8,11 @@ from torch.utils.data import Dataset as BaseDataset
 
 
 def preprocess_input(
-    x, 
-    mean=[0.485, 0.456, 0.406], 
-    std=[0.229, 0.224, 0.225], 
-    input_space="RGB", 
-    input_range=[0, 1], 
+    x,
+    mean=[0.485, 0.456, 0.406],
+    std=[0.229, 0.224, 0.225],
+    input_space="RGB",
+    input_range=[0, 1],
     **kwargs
 ):
 
@@ -34,8 +34,7 @@ def preprocess_input(
     return x
 
 
-
-def read_data_file(data_fp, root_dir):
+def read_data_file(data_fp, root_dir, format='.jpeg'):
     image_fps = []
 
     if isinstance(data_fp, list):
@@ -44,14 +43,16 @@ def read_data_file(data_fp, root_dir):
                 lines = fp.readlines()
                 for i in range(0, len(lines)):
                     image_file_path = lines[i].rstrip('\n').strip()
-                    image_file_path = os.path.join(root_dir, image_file_path)
+                    image_file_path = os.path.join(
+                        root_dir, image_file_path) + format
                     image_fps.append(image_file_path)
     else:
         with open(data_fp, "r+") as fp:
             lines = fp.readlines()
             for i in range(0, len(lines)):
                 image_file_path = lines[i].rstrip('\n').strip()
-                image_file_path = os.path.join(root_dir, image_file_path)
+                image_file_path = os.path.join(
+                    root_dir, image_file_path) + format
                 image_fps.append(image_file_path)
 
     return image_fps
@@ -66,7 +67,8 @@ class Dataset(BaseDataset):
         preprocessing=None,
     ):
         self.image_fps = image_fps
-        self.mask_fps = [x.replace('images', 'label_images').replace('.jpeg', '.png') for x in image_fps]
+        self.mask_fps = [x.replace('images', 'label_images').replace(
+            '.jpeg', '.png') for x in image_fps]
 
         self.mask_values = mask_values
 
@@ -90,12 +92,15 @@ class Dataset(BaseDataset):
         mask = cv2.cvtColor(mask, cv2.COLOR_BGR2RGB)
 
         # Extract mask for each classes
-        neo = np.all(mask == self.mask_values["neoplastic"], axis=-1).astype('float')
-        non = np.all(mask == self.mask_values["non-neoplastic"], axis=-1).astype('float')
-        ignore = np.all(mask == self.mask_values["undefined"], axis=-1).astype('float')
+        neo = np.all(
+            mask == self.mask_values["neoplastic"], axis=-1).astype('float')
+        non = np.all(
+            mask == self.mask_values["non-neoplastic"], axis=-1).astype('float')
+        ignore = np.all(
+            mask == self.mask_values["undefined"], axis=-1).astype('float')
         ignore_2 = np.all(mask == [255, 255, 255], axis=-1).astype('float')
         ignore = ignore + ignore_2
-        
+
         # apply augmentations
         if self.augmentation:
             sample = self.augmentation(image=image, masks=[neo, non, ignore])
@@ -120,11 +125,14 @@ class Dataset(BaseDataset):
 
 def get_train_augmentation(height, width):
     train_transform = [
-        albu.Resize(height=height, width=width, interpolation=cv2.INTER_NEAREST, always_apply=True),
-        albu.ShiftScaleRotate(shift_limit=0.1, scale_limit=0.1, rotate_limit=10, border_mode=0, p=0.5),
+        albu.Resize(height=height, width=width,
+                    interpolation=cv2.INTER_NEAREST, always_apply=True),
+        albu.ShiftScaleRotate(shift_limit=0.1, scale_limit=0.1,
+                              rotate_limit=10, border_mode=0, p=0.5),
         albu.HorizontalFlip(p=0.5),
         albu.VerticalFlip(p=0.5),
-        albu.ColorJitter (brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2, p=0.5),
+        albu.ColorJitter(brightness=0.2, contrast=0.2,
+                         saturation=0.2, hue=0.2, p=0.5),
         albu.MotionBlur(blur_limit=(3, 7), p=0.5)
     ]
     return albu.Compose(train_transform, p=1)
@@ -132,7 +140,8 @@ def get_train_augmentation(height, width):
 
 def get_valid_augmentation(height, width):
     test_transform = [
-        albu.Resize(height=height, width=width, interpolation=cv2.INTER_NEAREST, always_apply=True)
+        albu.Resize(height=height, width=width,
+                    interpolation=cv2.INTER_NEAREST, always_apply=True)
     ]
     return albu.Compose(test_transform, p=1)
 
