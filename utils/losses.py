@@ -79,11 +79,16 @@ class BlazeNeoLoss2(nn.Module):
 
     def forward(self, y_pr, mask):
         polyp_mask, neo_mask, ignore_mask = split_mask(mask)
-
-        softmax_pr = torch.softmax(y_pr, dim=1)
-        fg = softmax_pr[:, [0], :, :] + softmax_pr[:, [1], :, :]
-        bg = softmax_pr[:, [2], :, :]
+        
+        fg = torch.max(y_pr[:, [0,1], :, :], dim=1, keepdim=True)
+        bg = y_pr[:, [2], :, :]
         polyp_pr = torch.cat((fg, bg), dim=1)
+        polyp_pr = torch.softmax(polyp_pr, dim=1)
+        
+#         softmax_pr = torch.softmax(y_pr, dim=1)
+#         fg = softmax_pr[:, [0], :, :] + softmax_pr[:, [1], :, :]
+#         bg = softmax_pr[:, [2], :, :]
+        
         ce_loss = CELoss(polyp_pr, polyp_mask)
         ft_loss = FocalTverskyLoss(polyp_pr, polyp_mask, activation=False)
         aux_loss = ce_loss + ft_loss
