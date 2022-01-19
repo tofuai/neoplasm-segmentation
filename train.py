@@ -1,33 +1,31 @@
-import os 
+from utils import train, data, lr_scheduler
+from utils.losses import UNetLoss
+from models import DUNet
+from torch.utils.data import DataLoader
+import torch
+import yaml
+import sys
+import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-import sys
-import yaml
-
-import torch
-from torch.utils.data import DataLoader
-
-from models import UNet, PraNet, HarDNetMSEG, NeoUNet, BlazeNeo
-
-# from utils.losses import UNetLoss, PraNetLoss, HarDNetMSEGLoss, NeoUNetLoss, BlazeNeoLoss
-from utils.losses import UNetLoss, HarDNetMSEGLoss, PraNetLoss, BlazeNeoLoss, NeoUNetLoss
-from utils import train, data, lr_scheduler
+print(">>>>>", torch.cuda.current_device())
 
 
 def main(argv):
-    YAML_FP = "/home/s/syan/neoplasm_segmentation/config/exp110821.yml"
-    SAVED_FN = "NeoUNet_110821.pth"
+    YAML_FP = "/home/s/syan/neoplasm-segmentation/config/exp190122.yml"
+    SAVED_FN = "DUNet_190122.pth"
 
     with open(YAML_FP, "r") as fp:
         config = yaml.load(fp)
 
-    #==================== CREATE MODEL =====================
-    model = NeoUNet()
-    loss = NeoUNetLoss()
-    #=======================================================
+    # ==================== CREATE MODEL =====================
+    model = DUNet()
+    loss = UNetLoss()
+    # =======================================================
 
-    #==================== READ DATA ========================
-    train_image_fps = data.read_data_file(config["train_txt_path"], config["train_root_dir"])
+    # ==================== READ DATA ========================
+    train_image_fps = data.read_data_file(
+        config["train_txt_path"], config["train_root_dir"], format='.jpeg')
     print("Number of train images: {}".format(len(train_image_fps)))
 
     train_dataset = data.Dataset(
@@ -48,9 +46,9 @@ def main(argv):
         shuffle=True,
         num_workers=4
     )
-    #=======================================================
+    # =======================================================
 
-    #================== TRAINING ===========================
+    # ================== TRAINING ===========================
     optimizer = torch.optim.SGD(
         model.parameters(),
         lr=float(config["lr"]),
@@ -58,10 +56,11 @@ def main(argv):
         momentum=0.9
     )
 
-    scheduler = lr_scheduler.CosineAnnealingWarmupLR(optimizer, 
-                                                    T_max=config["num_epoch"]-config["warmup_epoch"], 
-                                                    warmup_epochs=config["warmup_epoch"],
-                                                    eta_min=float(config["min_lr"]))
+    scheduler = lr_scheduler.CosineAnnealingWarmupLR(optimizer,
+                                                     T_max=config["num_epoch"] -
+                                                     config["warmup_epoch"],
+                                                     warmup_epochs=config["warmup_epoch"],
+                                                     eta_min=float(config["min_lr"]))
 
     train_epoch = train.TrainEpoch(
         model,
@@ -71,7 +70,7 @@ def main(argv):
         device="cuda",
         verbose=True
     )
-    
+
     saved_path = os.path.join(config["saved_dir"], SAVED_FN)
 
     for i in range(0, config["num_epoch"]):
@@ -79,12 +78,13 @@ def main(argv):
         print("\nEpoch: {} - Learning Rate {}".format(i, current_lr))
 
         train_logs = train_epoch.run(train_loader)
-        
+
         print("Save model {}".format(saved_path))
         torch.save(model.state_dict(), saved_path)
 
         scheduler.step()
-    #=======================================================
+    # =======================================================
+
 
 if __name__ == "__main__":
     main(sys.argv)
