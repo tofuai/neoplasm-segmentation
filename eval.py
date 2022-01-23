@@ -27,13 +27,16 @@ class Metric():
         self.list_dice_score.append(dice_score)
 
     def show(self):
-        dice_score = 2 * self.total_tp / (2 * self.total_tp + self.total_fp + self.total_fn)
-        iou_score = self.total_tp / (self.total_tp + self.total_fp + self.total_fn)
-        
+        dice_score = 2 * self.total_tp / \
+            (2 * self.total_tp + self.total_fp + self.total_fn)
+        iou_score = self.total_tp / \
+            (self.total_tp + self.total_fp + self.total_fn)
+
         print("Evaluate {}".format(self.name))
         print("Dice score micro {}".format(dice_score))
         print("IoU score micro {}".format(iou_score))
-        print("Dice score macro {}".format(np.array(self.list_dice_score).mean()))
+        print("Dice score macro {}".format(
+            np.array(self.list_dice_score).mean()))
         print("IoU score macro {}".format(np.array(self.list_iou_score).mean()))
 
     def metric(self, inputs, targets, ignore=None):
@@ -51,8 +54,8 @@ class Metric():
 
 
 def main():
-    GT_DIR = "/media/syan/163EAD8F3EAD6887/VinIF/Data/!NeoDataset-1300/label_images"
-    pr_fps = glob("/media/syan/163EAD8F3EAD6887/VinIF/Result/exp_110821/PraNet/*")
+    GT_DIR = "/home/s/polyp/data/well_done/WLIv5_pub_640/Test/label_images"
+    pr_fps = glob("/home/s/polyp/result/DUNet_190122/*")
 
     polyp_metric = Metric("polyp")
     neo_metric = Metric("neo")
@@ -64,8 +67,9 @@ def main():
 
         gt_path = os.path.join(GT_DIR, fn)
         gt_img = cv2.imread(gt_path)
-        
-        pr_img = cv2.resize(pr_img, (gt_img.shape[1], gt_img.shape[0]), cv2.INTER_NEAREST)
+
+        pr_img = cv2.resize(
+            pr_img, (gt_img.shape[1], gt_img.shape[0]), cv2.INTER_NEAREST)
 
         neo_gt = np.all(gt_img == [0, 0, 255], axis=-1).astype('float')
         non_gt = np.all(gt_img == [0, 255, 0], axis=-1).astype('float')

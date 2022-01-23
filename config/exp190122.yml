@@ -1,15 +1,15 @@
-saved_dir: /home/s/syan/Models/exp190122
+saved_dir: /home/s/polyp/models
 
-train_root_dir: /home/s/WLIv5_pub_640/Train/images/
+train_root_dir: /home/s/polyp/data/well_done/WLIv5_pub_640/Train/images/
 train_txt_path:
-  - /home/s/syan/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_wo_non.txt
-  - /home/s/syan/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_w_non.txt
-  - /home/s/syan/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_w_non.txt
-  - /home/s/syan/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_w_non.txt
-  - /home/s/syan/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_w_non.txt
-  - /home/s/syan/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_w_non.txt
-test_root_dir: /home/s/WLIv5_pub_640/Test/images/
-test_txt_path: /home/s/syan/neoplasm-segmentation/config/wliv5/wliv5_test.txt
+  - /home/s/polyp/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_wo_non.txt
+  - /home/s/polyp/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_w_non.txt
+  - /home/s/polyp/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_w_non.txt
+  - /home/s/polyp/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_w_non.txt
+  - /home/s/polyp/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_w_non.txt
+  - /home/s/polyp/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_w_non.txt
+test_root_dir: /home/s/polyp/data/well_done/WLIv5_pub_640/Test/images/
+test_txt_path: /home/s/polyp/neoplasm-segmentation/config/wliv5_noud/wliv5_noud_test.txt
 
 # Color 
 mask_values:
@@ -25,7 +25,7 @@ width: 352
 # Training params
 lr: 1e-3
 min_lr: 0
-batch_size: 16
+batch_size: 4
 num_epoch: 20
 warmup_epoch: 5
 weight_decay: 1e-4

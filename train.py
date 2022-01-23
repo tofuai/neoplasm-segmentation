@@ -8,11 +8,9 @@ import sys
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
-print(">>>>>", torch.cuda.current_device())
-
 
 def main(argv):
-    YAML_FP = "/home/s/syan/neoplasm-segmentation/config/exp190122.yml"
+    YAML_FP = "/home/s/polyp/neoplasm-segmentation/config/exp190122.yml"
     SAVED_FN = "DUNet_190122.pth"
 
     with open(YAML_FP, "r") as fp:
